@@ -1,5 +1,10 @@
 import unittest
-import aquarium
+
+from engine.aquarium import Aquarium
+from engine.inhabitants.plant import WaterPlant
+from engine.inhabitants.prey import PreyFish
+from engine.inhabitants.predator import PredatorFish
+from engine.inhabitants.snail import Snail
 
 # positive test
 
@@ -9,53 +14,54 @@ class AquariumPositive(unittest.TestCase):
     MID_INHABITANTS = 60
         
     def test_min_inhabitants(self):
-        aquarium_instance = aquarium.Aquarium(AquariumPositive.MIN_INHABITANTS)
+        aquarium_instance = Aquarium(AquariumPositive.MIN_INHABITANTS)
         self.assertEqual(len(aquarium_instance.inhabitants), AquariumPositive.MIN_INHABITANTS)
-        aquarium.Aquarium._instances.clear()
+        Aquarium._instances.clear()
         
     def test_max_inhabitants(self):
-        aquarium_instance = aquarium.Aquarium(AquariumPositive.MAX_INHABITANTS)
+        aquarium_instance = Aquarium(AquariumPositive.MAX_INHABITANTS)
         self.assertEqual(len(aquarium_instance.inhabitants), AquariumPositive.MAX_INHABITANTS)    
-        aquarium.Aquarium._instances.clear()
+        Aquarium._instances.clear()
         
     def test_single(self):
-        aquarium_1 = aquarium.Aquarium(AquariumPositive.MIN_INHABITANTS)
-        aquarium_2 = aquarium.Aquarium(AquariumPositive.MID_INHABITANTS)
+        aquarium_1 = Aquarium(AquariumPositive.MIN_INHABITANTS)
+        aquarium_2 = Aquarium(AquariumPositive.MID_INHABITANTS)
         self.assertIs(aquarium_1, aquarium_2)
-        aquarium.Aquarium._instances.clear()
+        Aquarium._instances.clear()
         
     def test_weight_sanity(self):
-        aquarium_instance = aquarium.Aquarium(AquariumPositive.MID_INHABITANTS)
+        aquarium_instance = Aquarium(AquariumPositive.MID_INHABITANTS)
         initial_inhabitants_weight = sum(inhabitant.weight for inhabitant in aquarium_instance.inhabitants)
         aquarium_instance.evalute_inhabitants()
         finish_inhabitants_weight = sum(inhabitant.weight for inhabitant in aquarium_instance.inhabitants)
         self.assertEqual(round(initial_inhabitants_weight, 3), round(finish_inhabitants_weight, 3))
 
+        
 class PreyFishPositive(unittest.TestCase):
     MIN_WEIGHT = 1.0
     MAX_WEIGHT = 9.0
     FISH_NAME = 'Test fish'
     
     def test_min_weight(self):
-        prey_fish = aquarium.PreyFish(PreyFishPositive.FISH_NAME, PreyFishPositive.MIN_WEIGHT)
+        prey_fish = PreyFish(PreyFishPositive.FISH_NAME, PreyFishPositive.MIN_WEIGHT)
         self.assertEqual(prey_fish.weight, PreyFishPositive.MIN_WEIGHT)
         
     def test_max_weight(self):
-        prey_fish = aquarium.PreyFish(PreyFishPositive.FISH_NAME, PreyFishPositive.MAX_WEIGHT)
+        prey_fish = PreyFish(PreyFishPositive.FISH_NAME, PreyFishPositive.MAX_WEIGHT)
         self.assertEqual(prey_fish.weight, PreyFishPositive.MAX_WEIGHT)
     
     def test_fish_eat_water_plant(self):
-        prey_fish = aquarium.PreyFish(PreyFishPositive.FISH_NAME, PreyFishPositive.MIN_WEIGHT)
+        prey_fish = PreyFish(PreyFishPositive.FISH_NAME, PreyFishPositive.MIN_WEIGHT)
         init_fish_weight = prey_fish.weight
-        plant = aquarium.WaterPlant('test plant', 1.0)
+        plant = WaterPlant('test plant', 1.0)
         self.assertIs(prey_fish.eat(plant), plant)
         self.assertIn(plant, prey_fish.eated)
         self.assertEqual(prey_fish.weight, init_fish_weight + plant.weight)
         
     def test_fish_eat_predator(self):
-        prey_fish = aquarium.PreyFish(PreyFishPositive.FISH_NAME, PreyFishPositive.MIN_WEIGHT)
+        prey_fish = PreyFish(PreyFishPositive.FISH_NAME, PreyFishPositive.MIN_WEIGHT)
         init_prey_weight = prey_fish.weight
-        predator_fish = aquarium.PredatorFish('test predator', 10.0)
+        predator_fish = PredatorFish('test predator', 10.0)
         init_predator_weight = predator_fish.weight
         
         self.assertIs(prey_fish.eat(predator_fish), prey_fish)
@@ -65,44 +71,44 @@ class PreyFishPositive(unittest.TestCase):
         self.assertEqual(predator_fish.weight, init_predator_weight + prey_fish.weight)
         
     def test_fish_eat_fish(self):
-        prey_fish = aquarium.PreyFish(PreyFishPositive.FISH_NAME, PreyFishPositive.MIN_WEIGHT)
+        prey_fish = PreyFish(PreyFishPositive.FISH_NAME, PreyFishPositive.MIN_WEIGHT)
         init_fish_weight = prey_fish.weight
-        other_prey_fish = aquarium.PreyFish('other fish', PreyFishPositive.MAX_WEIGHT)
+        other_prey_fish = PreyFish('other fish', PreyFishPositive.MAX_WEIGHT)
         self.assertIs(prey_fish.eat(other_prey_fish), None)
         self.assertNotIn(other_prey_fish, prey_fish.eated)
         self.assertEqual(prey_fish.weight, init_fish_weight)
 
     def test_fish_eat_snail(self):
-        prey_fish = aquarium.PreyFish(PreyFishPositive.FISH_NAME, PreyFishPositive.MIN_WEIGHT)
+        prey_fish = PreyFish(PreyFishPositive.FISH_NAME, PreyFishPositive.MIN_WEIGHT)
         init_fish_weight = prey_fish.weight
-        snail = aquarium.Snail('test snail', 1.0)
+        snail = Snail('test snail', 1.0)
         self.assertIs(prey_fish.eat(snail), None)
         self.assertNotIn(snail, prey_fish.eated)
         self.assertEqual(prey_fish.weight, init_fish_weight)
-
+        
         
 class PredatorFishPositive(unittest.TestCase):
     WEIGHT = 10.0
     FISH_NAME = 'Test fish'
     
     def test_weight(self):
-        predator_fish = aquarium.PredatorFish(PredatorFishPositive.FISH_NAME, 
+        predator_fish = PredatorFish(PredatorFishPositive.FISH_NAME, 
             PredatorFishPositive.WEIGHT)
         self.assertEqual(predator_fish.weight, PredatorFishPositive.WEIGHT)
     
     def test_predator_eat_water_plant(self):
-        predator = aquarium.PredatorFish(PredatorFishPositive.FISH_NAME, 
+        predator = PredatorFish(PredatorFishPositive.FISH_NAME, 
             PredatorFishPositive.WEIGHT)
         init_predator_weight = predator.weight
-        plant = aquarium.WaterPlant('test plant', 1.0)
+        plant = WaterPlant('test plant', 1.0)
         self.assertIs(predator.eat(plant), None)
         self.assertNotIn(plant, predator.eated)
         self.assertEqual(predator.weight, init_predator_weight)
         
     def test_predator_eat_predator(self):
-        predator = aquarium.PredatorFish(PredatorFishPositive.FISH_NAME, 
+        predator = PredatorFish(PredatorFishPositive.FISH_NAME, 
             PredatorFishPositive.WEIGHT)
-        other_predator = aquarium.PredatorFish('other predator', 10.0)
+        other_predator = PredatorFish('other predator', 10.0)
         init_predator_weight = predator.weight
         
         self.assertIs(predator.eat(other_predator), None)
@@ -110,19 +116,19 @@ class PredatorFishPositive(unittest.TestCase):
         self.assertEqual(predator.weight, init_predator_weight)
         
     def test_predator_eat_fish(self):
-        predator = aquarium.PredatorFish(PredatorFishPositive.FISH_NAME, 
+        predator = PredatorFish(PredatorFishPositive.FISH_NAME, 
             PredatorFishPositive.WEIGHT)
         init_predator_weight = predator.weight
-        prey_fish = aquarium.PreyFish('test fish', 2.0)
+        prey_fish = PreyFish('test fish', 2.0)
         self.assertIs(predator.eat(prey_fish), prey_fish)
         self.assertIn(prey_fish, predator.eated)
         self.assertEqual(predator.weight, init_predator_weight + prey_fish.weight)
 
     def test_predator_eat_snail(self):
-        predator = aquarium.PredatorFish(PredatorFishPositive.FISH_NAME, 
+        predator = PredatorFish(PredatorFishPositive.FISH_NAME, 
             PredatorFishPositive.WEIGHT)
         init_predator_weight = predator.weight
-        snail = aquarium.Snail('test snail', 1.0)
+        snail = Snail('test snail', 1.0)
         self.assertIs(predator.eat(snail), None)
         self.assertNotIn(snail, predator.eated)
         self.assertEqual(predator.weight, init_predator_weight)
@@ -134,25 +140,25 @@ class WaterPlantPositive(unittest.TestCase):
     PLANT_NAME = 'Test plant'
     
     def test_min_weight(self):
-        plant = aquarium.WaterPlant(WaterPlantPositive.PLANT_NAME, 
+        plant = WaterPlant(WaterPlantPositive.PLANT_NAME, 
             WaterPlantPositive.MIN_WEIGHT)
         self.assertEqual(plant.weight, WaterPlantPositive.MIN_WEIGHT)
         
     def test_max_weight(self):
-        plant = aquarium.WaterPlant(WaterPlantPositive.PLANT_NAME, 
+        plant = WaterPlant(WaterPlantPositive.PLANT_NAME, 
             WaterPlantPositive.MAX_WEIGHT)
         self.assertEqual(plant.weight, WaterPlantPositive.MAX_WEIGHT)
         
     def test_plant_do_not_eat_inhabitants(self):
-        plant = aquarium.WaterPlant(WaterPlantPositive.PLANT_NAME, 
+        plant = WaterPlant(WaterPlantPositive.PLANT_NAME, 
             WaterPlantPositive.MIN_WEIGHT)
         init_plant_weight = plant.weight
         
         inhabitants = [
-            aquarium.WaterPlant('other plant', WaterPlantPositive.MAX_WEIGHT),
-            aquarium.PreyFish('test fish', 2.0),
-            aquarium.PredatorFish('test predator', 10.0),
-            aquarium.Snail('test snail', 1.0) ]
+            WaterPlant('other plant', WaterPlantPositive.MAX_WEIGHT),
+            PreyFish('test fish', 2.0),
+            PredatorFish('test predator', 10.0),
+            Snail('test snail', 1.0) ]
         
         [self.assertIs(plant.eat(inhabitant), None) for inhabitant in inhabitants]
         
@@ -166,42 +172,42 @@ class SnailPositive(unittest.TestCase):
     SNAIL_NAME = 'Test snail'
     
     def test_min_weight(self):
-        snail = aquarium.Snail(SnailPositive.SNAIL_NAME, SnailPositive.MIN_WEIGHT)
+        snail = Snail(SnailPositive.SNAIL_NAME, SnailPositive.MIN_WEIGHT)
         self.assertEqual(snail.weight, WaterPlantPositive.MIN_WEIGHT)
         
     def test_max_weight(self):
-        snail = aquarium.Snail(SnailPositive.SNAIL_NAME, SnailPositive.MAX_WEIGHT)
+        snail = Snail(SnailPositive.SNAIL_NAME, SnailPositive.MAX_WEIGHT)
         self.assertEqual(snail.weight, SnailPositive.MAX_WEIGHT)
            
     def test_snail_eat_water_plant(self):
-        snail = aquarium.Snail(SnailPositive.SNAIL_NAME, SnailPositive.MIN_WEIGHT)
+        snail = Snail(SnailPositive.SNAIL_NAME, SnailPositive.MIN_WEIGHT)
         init_snail_weight = snail.weight
-        plant = aquarium.WaterPlant('test plant', 1.0)
+        plant = WaterPlant('test plant', 1.0)
         self.assertIs(snail.eat(plant), plant)
         self.assertIn(plant, snail.eated)
         self.assertEqual(snail.weight, init_snail_weight + plant.weight)
         
     def test_snail_eat_predator(self):
-        snail = aquarium.Snail(SnailPositive.SNAIL_NAME, SnailPositive.MAX_WEIGHT)
+        snail = Snail(SnailPositive.SNAIL_NAME, SnailPositive.MAX_WEIGHT)
         init_snail_weight = snail.weight
-        predator = aquarium.PredatorFish('test predator', 10.0)
+        predator = PredatorFish('test predator', 10.0)
         
         self.assertIs(snail.eat(predator), None)
         self.assertNotIn(predator, snail.eated)
         self.assertEqual(snail.weight, init_snail_weight)
         
     def test_snail_eat_fish(self):
-        snail = aquarium.Snail(SnailPositive.SNAIL_NAME, SnailPositive.MAX_WEIGHT)
+        snail = Snail(SnailPositive.SNAIL_NAME, SnailPositive.MAX_WEIGHT)
         init_snail_weight = snail.weight
-        prey_fish = aquarium.PreyFish('test fish', 2.0)
+        prey_fish = PreyFish('test fish', 2.0)
         self.assertIs(snail.eat(prey_fish), None)
         self.assertNotIn(prey_fish, snail.eated)
         self.assertEqual(snail.weight, init_snail_weight)
 
     def test_snail_eat_snail(self):
-        snail = aquarium.Snail(SnailPositive.SNAIL_NAME, SnailPositive.MAX_WEIGHT)
+        snail = Snail(SnailPositive.SNAIL_NAME, SnailPositive.MAX_WEIGHT)
         init_snail_weight = snail.weight
-        other_snail = aquarium.Snail('other snail', 1.0)
+        other_snail = Snail('other snail', 1.0)
         self.assertIs(snail.eat(other_snail), None)
         self.assertNotIn(other_snail, snail.eated)
         self.assertEqual(snail.weight, init_snail_weight)
@@ -212,52 +218,52 @@ class SnailPositive(unittest.TestCase):
 class AquariumNegative(unittest.TestCase):
         
     def test_fewer_inhabitants(self):
-        self.assertRaises(Exception, aquarium.Aquarium, AquariumPositive.MIN_INHABITANTS - 1)
+        self.assertRaises(Exception, Aquarium, AquariumPositive.MIN_INHABITANTS - 1)
         
     def test_more_inhabitants(self):
-        self.assertRaises(Exception, aquarium.Aquarium, AquariumPositive.MAX_INHABITANTS + 1)
+        self.assertRaises(Exception, Aquarium, AquariumPositive.MAX_INHABITANTS + 1)
         
         
 class PreyFishNegative(unittest.TestCase):
         
     def test_fewer_weight(self):
         self.assertRaises(Exception, 
-            aquarium.PreyFish, PreyFishPositive.FISH_NAME, PreyFishPositive.MIN_WEIGHT - 0.1)
+            PreyFish, PreyFishPositive.FISH_NAME, PreyFishPositive.MIN_WEIGHT - 0.1)
         
     def test_greater_weight(self):
         self.assertRaises(Exception, 
-            aquarium.PreyFish, PreyFishPositive.FISH_NAME, PreyFishPositive.MAX_WEIGHT + 0.1)
+            PreyFish, PreyFishPositive.FISH_NAME, PreyFishPositive.MAX_WEIGHT + 0.1)
 
         
 class PredatorFishNegative(unittest.TestCase):
         
     def test_fewer_weight(self):
-        self.assertRaises(Exception, aquarium.PredatorFish, PredatorFishPositive.WEIGHT - 0.1)
+        self.assertRaises(Exception, PredatorFish, PredatorFishPositive.WEIGHT - 0.1)
         
     def test_greater_weight(self):
-        self.assertRaises(Exception, aquarium.PredatorFish, PredatorFishPositive.WEIGHT + 0.1)
+        self.assertRaises(Exception, PredatorFish, PredatorFishPositive.WEIGHT + 0.1)
 
         
 class WaterPlantNegative(unittest.TestCase):
         
     def test_fewer_weight(self):
         self.assertRaises(Exception, 
-            aquarium.WaterPlant, WaterPlantPositive.PLANT_NAME, WaterPlantPositive.MIN_WEIGHT - 0.1)
+            WaterPlant, WaterPlantPositive.PLANT_NAME, WaterPlantPositive.MIN_WEIGHT - 0.1)
         
     def test_greater_weight(self):
         self.assertRaises(Exception, 
-            aquarium.WaterPlant, WaterPlantPositive.PLANT_NAME, WaterPlantPositive.MAX_WEIGHT + 0.1)
+            WaterPlant, WaterPlantPositive.PLANT_NAME, WaterPlantPositive.MAX_WEIGHT + 0.1)
 
         
 class SnailNegative(unittest.TestCase):
         
     def test_fewer_weight(self):
         self.assertRaises(Exception, 
-            aquarium.Snail, SnailPositive.SNAIL_NAME, SnailPositive.MIN_WEIGHT - 0.1)
+            Snail, SnailPositive.SNAIL_NAME, SnailPositive.MIN_WEIGHT - 0.1)
         
     def test_greater_weight(self):
         self.assertRaises(Exception, 
-            aquarium.Snail, SnailPositive.SNAIL_NAME, SnailPositive.MAX_WEIGHT + 0.1)
+            Snail, SnailPositive.SNAIL_NAME, SnailPositive.MAX_WEIGHT + 0.1)
 
         
 if __name__ == '__main__':
